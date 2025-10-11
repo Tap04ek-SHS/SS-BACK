@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Подтверждение стикера</title>
+</head>
+<body>
+    <h1>Подтверждение стикера</h1>
+
+    <img src="/kultya" alt="Превью" width="300">
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <div>
+            <label>Эмодзи:</label>
+            <input type="text" name="emojis" value="🖼️">
+        </div>
+
+        <button type="submit" name="approved" value="true">Одобрить</button>
+        <button type="submit" name="rejected" value="true">Отклонить</button>
+    </form>
+
+    {% if approved %}
+        <p>Стикер добавлен!</p>
+    {% endif %}
+
+    {% if rejected %}
+        <p>Стикер отклонен!</p>
+    {% endif %}
+</body>
+</html>

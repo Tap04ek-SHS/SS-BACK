@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Простой просмотр картинки</title>
+</head>
+<body>
+    <h1>Картинка</h1>
+    <img src="/ebanayakartinka" alt="Моя картинка" style="max-width: 500px;">
+
+    <p>Ширина: {{ width }}px</p>
+    <p>Высота: {{ height }}px</p>
+    <form method="POST" action="/getdata">
+        {% csrf_token %}
+        <h3>Введите координаты:</h3>
+        <input type="number" name="X_cordinates" placeholder="X" required>
+        <input type="number" name="Y_cordinates" placeholder="Y" required>
+        <button type="submit">Отправить</button>
+    </form>
+    {% if saved_coordinates %}
+        <p>Сохраненные координаты: {{ saved_coordinates }}</p>
+    {% endif %}
+</body>
+</html>
