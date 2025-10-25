@@ -1,29 +1,20 @@
-"""
-URL configuration for Z_sait project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
 from django.urls import path
+from django.conf import settings
+from django.conf.urls.static import static
 from NASHE_PRILOZHENIE import views
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home_page, name='home'),
-    path('upload', views.TakePictureFile, name='upload'),
-    path('getdata', views.GetCoordinates, name='getdata'),
-    path('image-info/', views.ShowImageInformation, name='image_info'),
-    path('ebanayakartinka/', views.ServePicture, name='serve_picture'),
-    path('kultya', views.CutPicture, name='cut_picture'),
-    path('final', views.apply_sticker, name='apply_sticker'),
+    path('api/upload/', views.upload_image, name='upload_image'),
+    path('api/image-info/', views.get_image_info, name='image_info'),
+    path('api/coordinates/', views.set_coordinates, name='set_coordinates'),
+    path('api/crop/', views.crop_image, name='crop_image'),
+    path('api/apply-sticker/', views.apply_sticker, name='apply_sticker'),
+    path('api/cleanup/', views.cleanup, name='cleanup'),
 ]
+
+# Для обслуживания медиа-файлов в разработке
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
