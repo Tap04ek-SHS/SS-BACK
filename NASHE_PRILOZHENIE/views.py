@@ -8,7 +8,7 @@ import tempfile
 from PIL import Image
 from telegram import Bot
 from django.http import JsonResponse
-from NASHE_PRILOZHENIE.bot import sticker_bot
+from NASHE_PRILOZHENIE.bot import get_sticker_bot
 
 
 def home_page(request):
@@ -83,7 +83,7 @@ def add_sticker_to_pack(request, emojis):
     cut_path = request.session['processed_image_path']
     with open(cut_path, 'rb') as f:
         image_bytes = f.read()
-    success, message = sticker_bot._add_sticker(image_bytes, emojis)
+    success, message = get_sticker_bot.add_sticker(image_bytes, emojis)
     return JsonResponse({
         'success': success,
         'message': message
