@@ -8,8 +8,8 @@ import tempfile
 from PIL import Image
 from telegram import Bot
 from django.http import JsonResponse
-from NASHE_PRILOZHENIE.bot import get_sticker_bot
-
+from NASHE_PRILOZHENIE.bot import *
+import json
 
 def home_page(request):
 
@@ -17,14 +17,22 @@ def home_page(request):
 def TakePictureFile(request):
     if request.method == "POST":
         file = request.FILES.get("file")
+        print("SESSION ID:", request.session.session_key)
+        print("SESSION DATA:", dict(request.session))
         if file is None:
             return HttpResponse("No file uploaded", status=400)
-        if not CheckPictureFile(file.name):
+        #if not CheckPictureFile(file.name):
             return HttpResponse("File is not an image", status=400)
         with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
             temp_file.write(file.read())
             file_path = temp_file.name
         request.session['file_path'] = file_path
+        RestorePath(file_path, request)
+        print("=== ПОСЛЕ RestorePath ===")
+        print("file_path:", file_path)
+        print("png_image_path В СЕССИИ:", request.session.get('png_image_path'))
+        print("ВСЯ СЕССИЯ:", dict(request.session))
+        print("=========================")
         print(file_path)
         return HttpResponse("OK", status=200)
     return HttpResponse("Use POST method", status=405)
@@ -44,8 +52,9 @@ def ShowImageInformation(request):
     return render(request, 'VIBORKOORDINAT.html', context)
 def GetCoordinates(request):
     if request.method == "POST":
-        X_cordinates = request.POST.get("X_cordinates")
-        Y_cordinates = request.POST.get("Y_cordinates")
+        data = json.loads(request.body)
+        X_cordinates = data.get("x")
+        Y_cordinates = data.get("y")
         request.session['cordinates'] = [int(X_cordinates), int(Y_cordinates)]
         print(request.session['cordinates'])
     return HttpResponse("OK", status=200)
@@ -68,6 +77,10 @@ def ServePicture(request):
       return HttpResponse(png_image.read(), content_type="image/png")
 
 def CutPicture(request):
+    print("DEBUG session keys:", list(request.session.keys()))
+    print("DEBUG file_path:", request.session.get('file_path'))
+    print("DEBUG png_image_path:", request.session.get('png_image_path'))
+    print("DEBUG coordinates:", request.session.get('cordinates'))
     image_path = request.session.get('png_image_path')
     coordinates = request.session.get('cordinates')
     img = Image.open(image_path)
@@ -83,21 +96,23 @@ def add_sticker_to_pack(request, emojis):
     cut_path = request.session['processed_image_path']
     with open(cut_path, 'rb') as f:
         image_bytes = f.read()
-    success, message = get_sticker_bot.add_sticker(image_bytes, emojis)
+    success, message = get_sticker_bot().add_sticker(image_bytes, emojis)
     return JsonResponse({
         'success': success,
         'message': message
     })
+
 def apply_sticker(request):
-    context = {"approved": None, "rejected": None, "emojis": "🖼️"}
     if request.method == "POST":
-        approved = request.POST.get("approved")
-        rejected = request.POST.get("rejected")
-        if approved == "true":
-            emojis = request.POST.get('emojis', '🖼️')
-            add_sticker_to_pack(request, emojis)
-            context = {"approved": approved, "rejected": rejected, "emojis": emojis}
-        if rejected == "true":
-            return HttpResponse("Rejected", status=400)
-    return render(request, 'goida.html', context)
+        # ЧИТАЕМ JSON ИЗ ТЕЛА ЗАПРОСА
+        data = json.loads(request.body)
+        approved = data.get("approved")
+        emojis = data.get('emojis', '🖼️')
+
+        if approved:
+            # ВЫЗЫВАЕМ И ВОЗВРАЩАЕМ РЕЗУЛЬТАТ
+            result = add_sticker_to_pack(request, emojis)
+            return result  # ← вернет JsonResponse с success/message
+        return JsonResponse({"success": False, "message": "Not approved"})
+
 

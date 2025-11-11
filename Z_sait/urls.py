@@ -18,12 +18,17 @@ from django.contrib import admin
 from django.urls import path
 from NASHE_PRILOZHENIE import views
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', views.home_page, name='home'),
-    path('upload', views.TakePictureFile, name='upload'),
-    path('getdata', views.GetCoordinates, name='getdata'),
-    path('image-info/', views.ShowImageInformation, name='image_info'),
-    path('ebanayakartinka/', views.ServePicture, name='serve_picture'),
-    path('kultya', views.CutPicture, name='cut_picture'),
-    path('final', views.apply_sticker, name='apply_sticker'),
+
+
+
+    # API эндпоинты
+    path('api/upload/', views.TakePictureFile, name='upload'),
+    path('api/coordinates/', views.GetCoordinates, name='coordinates'),
+    path('api/crop/', views.CutPicture, name='crop'),
+    path('api/apply-sticker/', views.apply_sticker, name='apply_sticker'),
+    path('api/download/', views.ServePicture, name='download'),
+
+    # HTML страницы (для старой логики)
+    path('show-image/', views.ShowImageInformation, name='show_image'),
 ]
+
